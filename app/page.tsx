@@ -1,101 +1,257 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
+import { Button } from "@/components/ui/button";
+
+const words: string[] = [
+  "white",
+  "snow",
+  "ivory",
+  "pearl",
+  "alabaster",
+  "chalk",
+  "milk",
+  "cream",
+  "eggshell",
+  "vanilla",
+  "frost",
+  "cloud",
+  "cotton",
+  "linen",
+  "porcelain",
+  "bleached",
+  "pale",
+  "fair",
+  "blank",
+  "pure",
+  "clean",
+  "bright",
+  "light",
+  "whitewash",
+  "flour",
+  "silver",
+  "moonlight",
+];
+
+interface Stats {
+  grossWPM: number;
+  netWPM: number;
+  accuracy: number;
+}
+
+const useTypingGame = (initialText: string) => {
+  const [text, setText] = useState(initialText);
+  const [input, setInput] = useState("");
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [endTime, setEndTime] = useState<number | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isGameStarted, setIsGameStarted] = useState(false);
+  const [stats, setStats] = useState<Stats>({
+    grossWPM: 0,
+    netWPM: 0,
+    accuracy: 0,
+  });
+
+  const calculateWPM = useCallback(
+    (
+      text: string,
+      input: string,
+      startTime: number,
+      endTime: number
+    ): Stats => {
+      const timeInMinutes = (endTime - startTime) / 60000;
+      let correctChars = 0;
+      const totalChars = input.length;
+
+      for (let i = 0; i < Math.min(text.length, input.length); i++) {
+        if (text[i] === input[i]) {
+          correctChars++;
+        }
+      }
+
+      const grossWPM = Math.round(totalChars / 5 / timeInMinutes);
+      const netWPM = Math.round(correctChars / 5 / timeInMinutes);
+      const accuracy =
+        totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 0;
+
+      return { grossWPM, netWPM, accuracy };
+    },
+    []
+  );
+
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value.replace(/[0-9]/g, "");
+
+      if (!isGameStarted) {
+        setIsGameStarted(true);
+        setStartTime(Date.now());
+      }
+
+      setInput(value);
+      setCurrentIndex(value.length);
+
+      if (value.length === text.length) {
+        const end = Date.now();
+        setEndTime(end);
+
+        const calculatedStats = calculateWPM(text, value, startTime!, end);
+        setStats(calculatedStats);
+      }
+    },
+    [isGameStarted, text, startTime, calculateWPM]
+  );
+
+  const resetGame = useCallback(() => {
+    setText(generateText());
+    setInput("");
+    setStartTime(null);
+    setEndTime(null);
+    setCurrentIndex(0);
+    setIsGameStarted(false);
+    setStats({ grossWPM: 0, netWPM: 0, accuracy: 0 });
+  }, []);
+
+  return {
+    text,
+    input,
+    startTime,
+    endTime,
+    currentIndex,
+    isGameStarted,
+    stats,
+    handleInputChange,
+    resetGame,
+  };
+};
+
+const generateText = () => {
+  return words
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 50)
+    .join(" ");
+};
+
+export default function TypingGame() {
+  const initialText = useMemo(() => generateText(), []);
+  const {
+    text,
+    input,
+    startTime,
+    endTime,
+    currentIndex,
+    isGameStarted,
+    stats,
+    handleInputChange,
+    resetGame,
+  } = useTypingGame(initialText);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isGameStarted && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isGameStarted]);
+
+  useEffect(() => {
+    const handleClick = () => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("click", handleClick);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener("click", handleClick);
+      }
+    };
+  }, []);
+
+  const renderText = useCallback(() => {
+    return text.split("").map((char, index) => {
+      let className = "text-2xl font-mono ";
+      if (index < currentIndex) {
+        className += input[index] === char ? "text-white" : "text-red-500";
+      } else if (index === currentIndex) {
+        className += "bg-white text-gray-500 animate-background-blink-sharp";
+      } else {
+        className += "text-gray-500";
+      }
+      return (
+        <span key={index} className={className}>
+          {char}
+        </span>
+      );
+    });
+  }, [text, currentIndex, input]);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-4">
+      <div className="w-full max-w-4xl bg-gray-800 rounded-lg shadow-md p-6">
+        <h1 className="text-3xl font-bold text-center mb-6 font-mono">
+          Bialasky typer
+        </h1>
+        {endTime && startTime ? (
+          <div className="text-center">
+            <p>Congratulations! You&apos;ve finished typing all the text.</p>
+            <p className="text-2xl font-bold">
+              Your net typing speed: {stats.netWPM} WPM
+            </p>
+            <p className="">Your gross typing speed: {stats.grossWPM} WPM</p>
+            <p>Your accuracy: {stats.accuracy}%</p>
+            <p>
+              Your time was: {((endTime - startTime) / 1000).toFixed(2)} seconds
+            </p>
+            <Button onClick={resetGame} className="mt-4">
+              Play Again
+            </Button>
+          </div>
+        ) : (
+          <>
+            <div
+              ref={containerRef}
+              className="mb-4 h-40 overflow-y-auto bg-gray-700 p-4 rounded cursor-text"
+              role="textbox"
+              aria-label="Text to type"
+            >
+              {renderText()}
+            </div>
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={handleInputChange}
+              className="w-0 h-0 opacity-0 absolute"
+              aria-label="Type the text above"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <div className="text-sm text-gray-400 mt-4 text-center">
+              {isGameStarted ? (
+                <button
+                  onClick={resetGame}
+                  className="text-white font-bold uppercase"
+                >
+                  Reset
+                </button>
+              ) : (
+                "Start typing to begin the game. The timer will start when you type your first character."
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
