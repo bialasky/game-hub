@@ -1,3 +1,5 @@
+// games/layout.tsx
+
 import Link from "next/link";
 
 export default function GamesLayout({
@@ -8,7 +10,7 @@ export default function GamesLayout({
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       <nav className="bg-gray-800 p-4">
-        <div className="container mx-auto flex justify-between align-center">
+        <div className="container mx-auto flex justify-between items-center">
           <Link
             className="text-xl text-blue-400 hover:text-blue-300 font-bold"
             href="/"

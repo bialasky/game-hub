@@ -6,7 +6,7 @@ A collection of fun and engaging browser-based games built with Next.js.
 
 - Memory Card Matching
 - Typing Speed Test
-- [List other games as you add them]
+- [List other games as you add theme]
 
 ## 🚀 Getting Started
 
