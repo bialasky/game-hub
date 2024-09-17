@@ -163,7 +163,7 @@ export default function TypingGame({ initialText }: { initialText: string }) {
         </h1>
         {endTime && startTime ? (
           <div className="text-center">
-            <p>Congratulations! You've finished typing all the text.</p>
+            <p>Congratulations! You&apos;ve finished typing all the text.</p>
             <p className="text-2xl font-bold">
               Your net typing speed: {stats.netWPM} WPM
             </p>
