@@ -1,4 +1,4 @@
-import MemoryGame from "./MemoryGame";
+import MemoryGame from "../../../components/MemoryGame";
 
 export const metadata = {
   title: "Memory Card Matching",

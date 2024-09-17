@@ -1,6 +1,6 @@
 // /games/typeracer/page.tsx or page.server.tsx
-import { generateText } from "./utils";
-import TypingGame from "./TypingGame";
+import { generateText } from "@/app/utils";
+import TypingGame from "../../../components/TypingGame";
 
 export default function TypeRacerPage() {
   const initialText = generateText();

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { generateText } from "./utils";
+import { generateText } from "@/app/utils";
 
 interface Stats {
   grossWPM: number;
